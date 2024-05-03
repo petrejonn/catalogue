@@ -1,3 +1,7 @@
+import ast
+from typing import Dict, Type
+
+from pydantic import BaseModel, create_model
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -42,3 +46,42 @@ async def drop_database() -> None:
         )
         await conn.execute(text(disc_users))
         await conn.execute(text(f'DROP DATABASE "{settings.db_base}"'))
+
+
+def create_pydantic_model(schema: Dict[str, str]) -> Type[BaseModel]:
+    """
+    Creates a Pydantic model dynamically based on the input schema.
+
+    Args:
+        schema (str): A string representing field names and their types.
+
+    Returns:
+        type: The dynamically created Pydantic model.
+    """
+    try:
+        if not isinstance(schema, dict):
+            raise ValueError(
+                "Invalid schema format. Expected a dictionary-like string.",
+            )
+        # Create a list of field tuples (field_name, field_type, ...)
+        fields = []
+        for field_name, field_type in schema.items():
+            required = not field_type.startswith("*")  # Check if field is required
+            if not required:
+                # Remove the asterisk if present
+                field_type = field_type.lstrip("*")
+            fields.append(
+                (
+                    field_name,
+                    (
+                        (ast.literal_eval(field_type), ...)
+                        if required
+                        else (ast.literal_eval(field_type))
+                    ),
+                ),
+            )
+
+        # Create the Pydantic model dynamically
+        return create_model("DynamicModel", **dict(fields))
+    except Exception as exc:
+        raise ValueError(f"Error creating Pydantic model: {str(exc)}")

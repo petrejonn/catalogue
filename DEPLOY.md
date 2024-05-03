@@ -2,24 +2,6 @@
 
 ---
 
-## Poetry
-
-This project uses poetry. It's a modern dependency management
-tool.
-
-To run the project use this set of commands:
-
-```bash
-poetry install
-poetry run python -m catalogue
-```
-
-This will start the server on the configured host.
-
-You can find swagger documentation at `/api/docs`.
-
-You can read more about poetry here: https://python-poetry.org/
-
 ## Docker
 
 You can start the project with docker using this command:
@@ -41,27 +23,6 @@ But you have to rebuild image every time you modify `poetry.lock` or `pyproject.
 
 ```bash
 docker-compose -f deploy/docker-compose.yml --project-directory . build
-```
-
-## Project structure
-
-```bash
-$ tree "catalogue"
-catalogue
-├── conftest.py  # Fixtures for all tests.
-├── db  # module contains db configurations
-│   ├── dao  # Data Access Objects. Contains different classes to interact with database.
-│   └── models  # Package contains different models for ORMs.
-├── __main__.py  # Startup script. Starts uvicorn.
-├── services  # Package for different external services such as rabbit or redis etc.
-├── settings.py  # Main configuration settings for project.
-├── static  # Static content.
-├── tests  # Tests for project.
-└── web  # Package contains web server. Handlers, startup config.
-    ├── api  # Package with all handlers.
-    │   └── router.py  # Main router.
-    ├── application.py  # FastAPI application configuration.
-    └── lifetime.py  # Contains actions to perform on startup and shutdown.
 ```
 
 ## Configuration
@@ -100,7 +61,7 @@ docker-compose -f deploy/docker-compose.yml -f deploy/docker-compose.otlp.yml --
 ```
 
 This command will start OpenTelemetry collector and jaeger.
-After sending a requests you can see traces in jaeger's UI
+After sending a requests, you can see traces in jaeger's UI
 at http://localhost:16686/.
 
 This docker configuration is not supposed to be used in production.
