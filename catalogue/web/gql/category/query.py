@@ -13,7 +13,7 @@ class Query:
     """Query to interact with category."""
 
     @strawberry.field(description="Get all categories")
-    async def get_categories(
+    async def categories(
         self,
         info: Info[Context, None],
         limit: int = 10,
@@ -35,7 +35,7 @@ class Query:
         return [Category.from_instance(instance) for instance in instances]
 
     @strawberry.field(description="Get a category by id")
-    async def get_category(
+    async def category(
         self,
         info: Info[Context, None],
         category_id: int,

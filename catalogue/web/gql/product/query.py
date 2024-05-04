@@ -13,7 +13,7 @@ class Query:
     """Query to interact with product."""
 
     @strawberry.field(description="Get all products")
-    async def get_products(
+    async def products(
         self,
         info: Info[Context, None],
         limit: int = 10,
@@ -33,3 +33,23 @@ class Query:
         dao = ProductDAO(info.context.db_connection)
         instances = await dao.get_all(limit, offset)
         return [Product.from_instance(instance) for instance in instances]
+
+    @strawberry.field(description="Get a product by id")
+    async def product(
+        self,
+        info: Info[Context, None],
+        product_id: int,
+    ) -> Product:
+        """
+        Get a product by id.
+
+        :param info: The GraphQL info object.
+        :type info: Info[Context, None]
+        :param product_id: The id of the product to retrieve.
+        :type product_id: int
+        :return: A Product object representing the retrieved product.
+        :rtype: Product
+        """
+        dao = ProductDAO(info.context.db_connection)
+        instance = await dao.get(product_id)
+        return Product.from_instance(instance)

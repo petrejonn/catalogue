@@ -5,6 +5,7 @@ import strawberry
 from strawberry.scalars import JSON
 from strawberry.types import Info
 
+from catalogue.db.dao.category_dao import CategoryDAO
 from catalogue.db.dao.product_dao import ProductDAO
 from catalogue.db.models.category_model import CategoryModel
 from catalogue.web.gql.context import Context
@@ -26,7 +27,6 @@ class Category:
     category_img_url: str
     requires_shipping: bool
     is_deleted: bool
-    children: JSON
     instance: strawberry.Private[CategoryModel]
 
     @strawberry.field
@@ -48,8 +48,30 @@ class Category:
             List[Product]: A list of Product objects representing the retrieved products.
         """
         dao = ProductDAO(info.context.db_connection)
-        instance = await dao.get_by_category(self.id, limit, offset)
-        return [Product.from_instance(product) for product in instance]
+        products = await dao.get_by_category(self.id, limit, offset)
+        return [Product.from_instance(product) for product in products]
+
+    @strawberry.field
+    async def subcategories(
+        self,
+        info: Info[Context, None],
+        limit: int = 10,
+        offset: int = 0,
+    ) -> List["Category"]:
+        """
+        Retrieves a list of subcategories associated with the current category.
+
+        Args:
+            info (Info[Context, None]): The GraphQL resolver info.
+            limit (int, optional): The maximum number of subcategories to retrieve. Defaults to 10.
+            offset (int, optional): The number of subcategories to skip. Defaults to 0.
+
+        Returns:
+            List[Category]: A list of Category objects representing the retrieved subcategories.
+        """
+        dao = CategoryDAO(info.context.db_connection)
+        categories = await dao.get_children(self.id, limit, offset)
+        return [Category.from_instance(category) for category in categories]
 
     @classmethod
     def from_instance(cls, instance: CategoryModel) -> "Category":
@@ -75,7 +97,6 @@ class Category:
             category_img_url=str(instance.category_img_url),
             requires_shipping=bool(instance.requires_shipping),
             is_deleted=bool(instance.is_deleted),
-            children=dict(instance.children),
             instance=instance,
         )
 

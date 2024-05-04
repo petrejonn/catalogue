@@ -56,6 +56,21 @@ class CategoryDAO:
             raise HTTPException(status_code=404, detail="Category not found")
         return category
 
+    async def get_children(
+        self,
+        category_id: int,
+        limit: int,
+        offset: int,
+    ) -> List[CategoryModel]:
+        """Get children categories by id."""
+        res = await self.session.execute(
+            select(CategoryModel)
+            .filter_by(parent_id=category_id)
+            .limit(limit)
+            .offset(offset),
+        )
+        return list(res.scalars().fetchall())
+
     async def delete(self, category_id: int) -> None:
         """Delete a category by id."""
         query = await self.session.execute(
